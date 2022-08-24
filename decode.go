@@ -42,11 +42,16 @@ func decode(cfg *Config) error {
 			encoded := string(buf[:n])
 			dcd, errr := base64.StdEncoding.DecodeString(encoded)
 			if errr != nil {
-				return errr
+				return &Err{22, fmt.Sprintf("WAWAWA!!! %v\n'%v'\n'%v'", errr, encoded[:345], encoded[343:])} // TODO TEMP
 			}
-			_, errr = wtr.Write(dcd) // Write must return error if # of bytes written < len(dcd), so the # of bytes
-			if errr != nil {
-				return errr
+
+			if wtr == nil {
+				fmt.Print(dcd) // Not terribly useful here...
+			} else {
+				_, errr = wtr.Write(dcd) // Write must return error if # of bytes written < len(dcd), so the # of bytes
+				if errr != nil {
+					return errr
+				}
 			}
 		}
 

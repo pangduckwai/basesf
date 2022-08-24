@@ -39,7 +39,7 @@ func encode(cfg *Config) error {
 	for {
 		n, err := rdr.Read(buf[:cap(buf)])
 		if n > 0 {
-			encoded := base64.StdEncoding.EncodeToString(buf[:n])
+			encoded := base64.StdEncoding.EncodeToString(buf[:n]) //base64.StdEncoding.WithPadding(base64.NoPadding).EncodeToString(buf[:n])
 			if wtr == nil {
 				fmt.Print(encoded)
 			} else {

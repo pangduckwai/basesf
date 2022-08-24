@@ -11,6 +11,9 @@ import (
 func main() {
 	cfg, err := parse(os.Args)
 	if err != nil {
+		if errr, ok := err.(*Err); !ok || errr.Code > 1 {
+			log.Fatal(err)
+		}
 		log.Fatalf("%v\n%v\n%v\n", err, app(), usage())
 	}
 
@@ -37,6 +40,10 @@ func main() {
 		err = encode(cfg)
 	case 2:
 		err = decode(cfg)
+	case 3:
+		fmt.Printf("%v\n%v\n", app(), usage())
+	case 4:
+		fmt.Println(Version())
 	}
 
 	if err != nil {
@@ -49,11 +56,15 @@ func Version() string {
 }
 
 func app() string {
-	return fmt.Sprintf("basesf - BaseSixtyFour encode/decode tool (version %v)", Version())
+	return fmt.Sprintf("basesf: BASESixtyFour encoding/decoding tool (version %v)", Version())
 }
 
 func usage() string {
-	return "Usage: basesf [encode|decode] {--in=filename|-i filename} {--out=filename|-o filename} {--buffer=size|-b size}"
+	return "Usage:\n basesf [encode|decode]\n" +
+		"   {-h | --help} {-v | --version}\n" +
+		"   {-i file | --in=file}\n" +
+		"   {-o file | --out=file}\n" +
+		"   {-b size | --buffer=size}"
 }
 
 func display(cfg *Config) string {
@@ -82,7 +93,7 @@ func (e *Err) Error() string {
 func test() {
 	content := []byte{128, 182, 109, 169, 39, 17, 65, 10, 93, 201, 88, 143, 79, 5}
 
-	// Write content to file for testing
+	// // Write content to file for testing
 	// err := os.WriteFile("test.bin", content, 0644)
 	// if err != nil {
 	// 	log.Fatal(err)
