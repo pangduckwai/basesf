@@ -11,7 +11,7 @@ import (
 func main() {
 	cfg, err := parse(os.Args)
 	if err != nil {
-		log.Fatalf("%v\nUsage: basesf [encode|decode] {--in=filename | -i filename} {--out=filename | -o filename} {--buffer=size}\n", err)
+		log.Fatalf("%v\n%v\n%v\n", err, app(), usage())
 	}
 
 	if cfg.Input != "" {
@@ -42,6 +42,32 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func Version() string {
+	return "0.1.0"
+}
+
+func app() string {
+	return fmt.Sprintf("basesf - BaseSixtyFour encode/decode tool (version %v)", Version())
+}
+
+func usage() string {
+	return "Usage: basesf [encode|decode] {--in=filename|-i filename} {--out=filename|-o filename} {--buffer=size|-b size}"
+}
+
+func display(cfg *Config) string {
+	inp := "stdin"
+	if cfg.Input != "" {
+		inp = cfg.Input
+	}
+
+	out := "stdout"
+	if cfg.Output != "" {
+		out = cfg.Output
+	}
+
+	return fmt.Sprintf("'%v' to '%v'...", inp, out)
 }
 
 type Err struct {

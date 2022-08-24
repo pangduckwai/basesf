@@ -52,6 +52,16 @@ func parse(args []string) (cfg *Config, err error) {
 				return nil, &Err{3, "Missing out filename"}
 			}
 			cfg.Output = args[i][6:]
+		case args[i] == "-b":
+			i++
+			if i >= len(args) {
+				return nil, &Err{4, "Missing buffer size argument"}
+			}
+			val, err := strconv.Atoi(args[i])
+			if err != nil {
+				return nil, err
+			}
+			cfg.Buffer = val
 		case strings.HasPrefix(args[i], "--buffer="):
 			if len(args[i]) <= 9 {
 				return nil, &Err{4, "Missing buffer size"}

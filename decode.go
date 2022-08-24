@@ -15,7 +15,7 @@ func decode(cfg *Config) error {
 
 	cfg.Buffer = cfg.Buffer - (cfg.Buffer % 4) // Base64 encoding represents 3 bytes using 4 characters
 
-	fmt.Printf("Decoding %v to %v... (buffer size: %v)\n", cfg.Input, cfg.Output, cfg.Buffer)
+	fmt.Printf("Decoding %v (buffer size: %v)\n", display(cfg), cfg.Buffer)
 
 	inp, err := os.Open(cfg.Input)
 	if err != nil {
