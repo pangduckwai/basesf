@@ -9,20 +9,21 @@ import (
 )
 
 func encode(cfg *Config) error {
-	if cfg.Input == "" {
-		return &Err{11, "Reading input from stdin not yet supported"}
-	}
-
 	cfg.Buffer = cfg.Buffer - (cfg.Buffer % 3) // Base64 encoding represents 3 bytes using 4 characters
 
 	if cfg.Verbose {
 		fmt.Printf("Encoding %v (buffer size: %v)...\n", display(cfg), cfg.Buffer)
 	}
 
-	inp, err := os.Open(cfg.Input)
-	if err != nil {
-		return err
+	var err error
+	inp := os.Stdin
+	if cfg.Input != "" {
+		inp, err = os.Open(cfg.Input)
+		if err != nil {
+			return err
+		}
 	}
+	rdr := bufio.NewReaderSize(inp, cfg.Buffer)
 
 	var wtr *bufio.Writer
 	if cfg.Output != "" {
@@ -37,19 +38,24 @@ func encode(cfg *Config) error {
 	}
 
 	buf := make([]byte, 0, cfg.Buffer)
-	rdr := bufio.NewReaderSize(inp, cfg.Buffer)
 	for idx := 0; ; idx++ {
-		n, err := rdr.Read(buf[:cap(buf)])
+		cnt, err := rdr.Read(buf[:cap(buf)])
+		if cfg.Input == "" && buf[:cnt][cnt-1] == '\n' {
+			err = io.EOF
+		}
 		if cfg.Verbose {
-			verbose(idx, n, cfg)
+			verbose(idx, cnt, cfg, (wtr != nil))
 		}
 
 		// As described in the doc, process read data first if n > 0 before
 		// handling error, which could have been EOF
-		if n > 0 {
-			encoded := base64.StdEncoding.EncodeToString(buf[:n])
+		if cnt > 0 {
+			encoded := base64.StdEncoding.EncodeToString(buf[:cnt])
 			if wtr == nil {
 				fmt.Print(encoded)
+				if cfg.Verbose {
+					fmt.Println()
+				}
 			} else {
 				fmt.Fprint(wtr, encoded)
 			}
@@ -64,7 +70,9 @@ func encode(cfg *Config) error {
 		}
 	}
 
-	if wtr != nil {
+	if wtr == nil {
+		fmt.Println()
+	} else {
 		wtr.Flush()
 	}
 

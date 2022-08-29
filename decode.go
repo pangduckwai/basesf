@@ -15,15 +15,15 @@ func decode(cfg *Config) error {
 		fmt.Printf("Decoding %v (buffer size: %v)...\n", display(cfg), cfg.Buffer)
 	}
 
-	var rdr *bufio.Reader
+	var err error
+	inp := os.Stdin
 	if cfg.Input != "" {
-		inp, err := os.Open(cfg.Input)
+		inp, err = os.Open(cfg.Input)
 		if err != nil {
 			return err
 		}
-
-		rdr = bufio.NewReaderSize(inp, cfg.Buffer)
 	}
+	rdr := bufio.NewReaderSize(inp, cfg.Buffer)
 
 	var wtr *bufio.Writer
 	if cfg.Output != "" {
@@ -37,38 +37,25 @@ func decode(cfg *Config) error {
 		defer out.Close()
 	}
 
-	var cnt int
-	var err error
-	var encoded string
 	buf := make([]byte, 0, cfg.Buffer)
 	for idx := 0; ; idx++ {
-		if rdr == nil {
-			cnt, err = fmt.Scan(&encoded)
-			if err == nil {
-				cnt = len(encoded)
-				err = io.EOF
-			}
-		} else {
-			cnt, err = rdr.Read(buf[:cap(buf)])
+		cnt, err := rdr.Read(buf[:cap(buf)])
+		if cfg.Input == "" && buf[:cnt][cnt-1] == '\n' {
+			err = io.EOF
 		}
-
 		if cfg.Verbose {
-			verbose(idx, cnt, cfg)
+			verbose(idx, cnt, cfg, (wtr != nil))
 		}
 
 		// As described in the doc, process read data first if n > 0 before
 		// handling error, which could have been EOF
 		if cnt > 0 {
-			if rdr != nil {
-				encoded = string(buf[:cnt])
-			}
-			decoded, errr := base64.StdEncoding.DecodeString(encoded)
+			decoded, errr := base64.StdEncoding.DecodeString(string(buf[:cnt]))
 			if errr != nil {
 				return &Err{21, errr.Error()}
 			}
-
 			if wtr == nil {
-				fmt.Print(decoded) // Not terribly useful here...
+				fmt.Println(decoded) // Not terribly useful here...
 			} else {
 				_, errr = wtr.Write(decoded) // Write must return error if # of bytes written < len(decoded), so the # of bytes returned can be ignored
 				if errr != nil {
