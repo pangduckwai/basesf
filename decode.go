@@ -15,7 +15,9 @@ func decode(cfg *Config) error {
 
 	cfg.Buffer = cfg.Buffer - (cfg.Buffer % 4) // Base64 encoding represents 3 bytes using 4 characters
 
-	fmt.Printf("Decoding %v (buffer size: %v)\n", display(cfg), cfg.Buffer)
+	if cfg.Verbose {
+		fmt.Printf("Decoding %v (buffer size: %v)...\n", display(cfg), cfg.Buffer)
+	}
 
 	inp, err := os.Open(cfg.Input)
 	if err != nil {
@@ -35,20 +37,26 @@ func decode(cfg *Config) error {
 	}
 
 	buf := make([]byte, 0, cfg.Buffer)
-	rdr := bufio.NewReader(inp)
-	for {
+	rdr := bufio.NewReaderSize(inp, cfg.Buffer)
+	for idx := 0; ; idx++ {
 		n, err := rdr.Read(buf[:cap(buf)])
+		if cfg.Verbose {
+			verbose(idx, n, cfg)
+		}
+
+		// As described in the doc, process read data first if n > 0 before
+		// handling error, which could have been EOF
 		if n > 0 {
 			encoded := string(buf[:n])
-			dcd, errr := base64.StdEncoding.DecodeString(encoded)
+			decoded, errr := base64.StdEncoding.DecodeString(encoded)
 			if errr != nil {
-				return &Err{22, fmt.Sprintf("WAWAWA!!! %v\n'%v'\n'%v'", errr, encoded[:345], encoded[343:])} // TODO TEMP
+				return &Err{22, errr.Error()}
 			}
 
 			if wtr == nil {
-				fmt.Print(dcd) // Not terribly useful here...
+				fmt.Print(decoded) // Not terribly useful here...
 			} else {
-				_, errr = wtr.Write(dcd) // Write must return error if # of bytes written < len(dcd), so the # of bytes
+				_, errr = wtr.Write(decoded) // Write must return error if # of bytes written < len(decoded), so the # of bytes returned can be ignored
 				if errr != nil {
 					return errr
 				}
@@ -66,6 +74,10 @@ func decode(cfg *Config) error {
 
 	if wtr != nil {
 		wtr.Flush()
+	}
+
+	if cfg.Verbose {
+		fmt.Println("Decoding finished")
 	}
 
 	return nil

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math"
 	"os"
 )
 
@@ -17,28 +18,14 @@ func main() {
 		log.Fatalf("%v\n%v\n%v\n", err, app(), usage())
 	}
 
-	if cfg.Input != "" {
-		if _, err := os.Stat(cfg.Input); errors.Is(err, os.ErrNotExist) {
-			log.Fatalf("Input file '%v' does not exist\n", cfg.Input)
-		} else if err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	if cfg.Output != "" {
-		if _, err := os.Stat(cfg.Output); err == nil {
-			log.Fatalf("Out file '%v' already exists\n", cfg.Output)
-		} else if !errors.Is(err, os.ErrNotExist) {
-			log.Fatal(err)
-		}
-	}
-
 	switch cfg.Command {
 	case 0:
 		test()
 	case 1:
+		validate(cfg)
 		err = encode(cfg)
 	case 2:
+		validate(cfg)
 		err = decode(cfg)
 	case 3:
 		fmt.Printf("%v\n%v\n", app(), usage())
@@ -52,19 +39,29 @@ func main() {
 }
 
 func Version() string {
-	return "0.1.0"
+	return "0.1.1"
 }
 
 func app() string {
-	return fmt.Sprintf("basesf: BASESixtyFour encoding/decoding tool (version %v)", Version())
+	return fmt.Sprintf("basesf: BASE-Sixty-Four encoding/decoding tool (version %v)", Version())
 }
 
-func usage() string {
-	return "Usage:\n basesf [encode|decode]\n" +
-		"   {-h | --help} {-v | --version}\n" +
-		"   {-i file | --in=file}\n" +
-		"   {-o file | --out=file}\n" +
-		"   {-b size | --buffer=size}"
+func validate(cfg *Config) {
+	if cfg.Input != "" {
+		if _, err := os.Stat(cfg.Input); errors.Is(err, os.ErrNotExist) {
+			log.Fatalf("Input file '%v' does not exist\n", cfg.Input)
+		} else if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	if cfg.Output != "" {
+		if _, err := os.Stat(cfg.Output); err == nil {
+			log.Fatalf("Output file '%v' already exists\n", cfg.Output)
+		} else if !errors.Is(err, os.ErrNotExist) {
+			log.Fatal(err)
+		}
+	}
 }
 
 func display(cfg *Config) string {
@@ -78,7 +75,19 @@ func display(cfg *Config) string {
 		out = cfg.Output
 	}
 
-	return fmt.Sprintf("'%v' to '%v'...", inp, out)
+	return fmt.Sprintf("'%v' to '%v'", inp, out)
+}
+
+func verbose(idx, cnt int, cfg *Config) {
+	digits := int(math.Log10(float64(cfg.Buffer))) + 1
+	format := fmt.Sprintf("%%%dv", digits)
+
+	plr := "s"
+	if cnt < 2 {
+		plr = ""
+	}
+
+	fmt.Printf("%4v - read "+format+"/%v byte%v\n", idx, cnt, cfg.Buffer, plr)
 }
 
 type Err struct {
