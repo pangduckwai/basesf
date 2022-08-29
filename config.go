@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-const bUFFER = 4096
+const bUFFER = 1048576
 
 type Config struct {
 	Command uint8  // 1 - encode; 2 - decode
@@ -37,9 +37,9 @@ func help() string {
 		"    -o FILE, --out=FILE\n"+
 		"       name of the output file, omitting means output to stdout\n"+
 		"    {-b SIZE | --buffer=SIZE}\n"+
-		"       size of the read buffer (SIZE default: %v)\n"+
+		"       size of the read buffer (SIZE default: %v KB)\n"+
 		"    {-v | --verbose}\n"+
-		"       display detail messages of the processing", bUFFER)
+		"       display detail messages of the processing", bUFFER/1024)
 }
 
 func parse(args []string) (cfg *Config, err error) {
