@@ -1,5 +1,5 @@
 # `basesf`
-<u>BASE</u> <u>S</u>ixty <u>F</u>our encoding / decoding tool
+### ***BASE S***ixty ***F***our encoding / decoding tool
 
 A simple tool for base64 encoding and decoding.
 
