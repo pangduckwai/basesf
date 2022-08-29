@@ -27,19 +27,19 @@ func usage() string {
 func help() string {
 	return fmt.Sprintf("Usage: basesf [commands] {options}\n"+
 		"  *commands:\n"+
-		"    encode  - encode file/data to base64 string\n"+
-		"    decode  - decode base64 string to file/data\n"+
+		"    encode  - convert input into base64 encoded string\n"+
+		"    decode  - convert base64 encoded string back to the original form\n"+
 		"    version - display current version of 'basesf'\n"+
 		"    help    - display this message\n"+
 		"  *options:\n"+
 		"    -i FILE, --in=FILE\n"+
-		"       Name of the input file, read from stdin if omitted\n"+
+		"       name of the input file, omitting means input from stdin\n"+
 		"    -o FILE, --out=FILE\n"+
-		"       Name of the output file, write to stdout if omitted\n"+
+		"       name of the output file, omitting means output to stdout\n"+
 		"    {-b SIZE | --buffer=SIZE}\n"+
-		"       Size of the read buffer (SIZE default: %v)\n"+
+		"       size of the read buffer (SIZE default: %v)\n"+
 		"    {-v | --verbose}\n"+
-		"       Display detail messages of the processing", bUFFER)
+		"       display detail messages of the processing", bUFFER)
 }
 
 func parse(args []string) (cfg *Config, err error) {
