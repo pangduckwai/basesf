@@ -43,6 +43,10 @@ func help() string {
 }
 
 func parse(args []string) (cfg *Config, err error) {
+	if len(args) < 2 {
+		return nil, &Err{1, "Command missing"}
+	}
+
 	cfg = &Config{
 		Buffer:  bUFFER,
 		Verbose: false,

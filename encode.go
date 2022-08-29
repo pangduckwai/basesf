@@ -40,9 +40,6 @@ func encode(cfg *Config) error {
 	buf := make([]byte, 0, cfg.Buffer)
 	for idx := 0; ; idx++ {
 		cnt, err := rdr.Read(buf[:cap(buf)])
-		if cfg.Input == "" && buf[:cnt][cnt-1] == '\n' {
-			err = io.EOF
-		}
 		if cfg.Verbose {
 			verbose(idx, cnt, cfg, (wtr != nil))
 		}
@@ -50,6 +47,10 @@ func encode(cfg *Config) error {
 		// As described in the doc, process read data first if n > 0 before
 		// handling error, which could have been EOF
 		if cnt > 0 {
+			if cfg.Input == "" && buf[:cnt][cnt-1] == '\n' {
+				err = io.EOF
+			}
+
 			encoded := base64.StdEncoding.EncodeToString(buf[:cnt])
 			if wtr == nil {
 				fmt.Print(encoded)

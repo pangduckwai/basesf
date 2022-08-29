@@ -39,7 +39,7 @@ func main() {
 }
 
 func Version() string {
-	return "0.1.1"
+	return "0.2.0"
 }
 
 func app() string {

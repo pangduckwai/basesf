@@ -33,7 +33,7 @@ Usage:
     - display detail messages of the processing if specified
 
 ## Changelog
-### Unreleased
+### v0.2.0
 - add support of `stdin` as input.
 
 ### v0.1.1
