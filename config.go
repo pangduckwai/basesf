@@ -36,9 +36,9 @@ func help() string {
 		"       name of the input file, omitting means input from stdin\n"+
 		"    -o FILE, --out=FILE\n"+
 		"       name of the output file, omitting means output to stdout\n"+
-		"    {-b SIZE | --buffer=SIZE}\n"+
+		"    -b SIZE, --buffer=SIZE\n"+
 		"       size of the read buffer (SIZE default: %v KB)\n"+
-		"    {-v | --verbose}\n"+
+		"    -v, --verbose\n"+
 		"       display detail messages of the processing", bUFFER/1024)
 }
 
