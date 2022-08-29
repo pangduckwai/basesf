@@ -9,19 +9,20 @@ import (
 )
 
 func decode(cfg *Config) error {
-	if cfg.Input == "" {
-		return &Err{21, "Reading input from stdin not yet supported"}
-	}
-
 	cfg.Buffer = cfg.Buffer - (cfg.Buffer % 4) // Base64 encoding represents 3 bytes using 4 characters
 
 	if cfg.Verbose {
 		fmt.Printf("Decoding %v (buffer size: %v)...\n", display(cfg), cfg.Buffer)
 	}
 
-	inp, err := os.Open(cfg.Input)
-	if err != nil {
-		return err
+	var rdr *bufio.Reader
+	if cfg.Input != "" {
+		inp, err := os.Open(cfg.Input)
+		if err != nil {
+			return err
+		}
+
+		rdr = bufio.NewReaderSize(inp, cfg.Buffer)
 	}
 
 	var wtr *bufio.Writer
@@ -36,21 +37,34 @@ func decode(cfg *Config) error {
 		defer out.Close()
 	}
 
+	var cnt int
+	var err error
+	var encoded string
 	buf := make([]byte, 0, cfg.Buffer)
-	rdr := bufio.NewReaderSize(inp, cfg.Buffer)
 	for idx := 0; ; idx++ {
-		n, err := rdr.Read(buf[:cap(buf)])
+		if rdr == nil {
+			cnt, err = fmt.Scan(&encoded)
+			if err == nil {
+				cnt = len(encoded)
+				err = io.EOF
+			}
+		} else {
+			cnt, err = rdr.Read(buf[:cap(buf)])
+		}
+
 		if cfg.Verbose {
-			verbose(idx, n, cfg)
+			verbose(idx, cnt, cfg)
 		}
 
 		// As described in the doc, process read data first if n > 0 before
 		// handling error, which could have been EOF
-		if n > 0 {
-			encoded := string(buf[:n])
+		if cnt > 0 {
+			if rdr != nil {
+				encoded = string(buf[:cnt])
+			}
 			decoded, errr := base64.StdEncoding.DecodeString(encoded)
 			if errr != nil {
-				return &Err{22, errr.Error()}
+				return &Err{21, errr.Error()}
 			}
 
 			if wtr == nil {
@@ -72,7 +86,9 @@ func decode(cfg *Config) error {
 		}
 	}
 
-	if wtr != nil {
+	if wtr == nil {
+		fmt.Println()
+	} else {
 		wtr.Flush()
 	}
 

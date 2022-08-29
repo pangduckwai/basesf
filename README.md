@@ -33,11 +33,11 @@ Usage:
     - display detail messages of the processing if specified
 
 ## Changelog
-### Unreleased 1
-- add support of stdin as input.
+### Unreleased
+- add support of `stdin` as input.
 
 ### v0.1.1
-- fix decoding output to stdout.
+- fix decoding output to `stdout`.
 - fix encoding/decoding problem when buffer size smaller than the input file
 - move `version` and `help` from options to commands
 
