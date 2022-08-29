@@ -1,5 +1,5 @@
 # `basesf`
-### ***BASE S***ixty ***F***our encoding / decoding tool
+### ***BASE***-***S***ixty-***F***our encoding / decoding tool
 
 A simple tool for base64 encoding and decoding.
 
