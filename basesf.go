@@ -28,9 +28,9 @@ func main() {
 		validate(cfg)
 		err = decode(cfg)
 	case 3:
-		fmt.Printf("%v\n%v\n", app(), usage())
+		fmt.Printf("%v\n%v\n", app(), help())
 	case 4:
-		fmt.Println(Version())
+		fmt.Println(app())
 	}
 
 	if err != nil {
@@ -43,7 +43,7 @@ func Version() string {
 }
 
 func app() string {
-	return fmt.Sprintf("basesf: BASE-Sixty-Four encoding/decoding tool (version %v)", Version())
+	return fmt.Sprintf("BASE-Sixty-Four encoding/decoding tool (version %v)", Version())
 }
 
 func validate(cfg *Config) {

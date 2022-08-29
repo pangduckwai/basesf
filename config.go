@@ -6,6 +6,8 @@ import (
 	"strings"
 )
 
+const bUFFER = 4096
+
 type Config struct {
 	Command uint8  // 1 - encode; 2 - decode
 	Input   string // nil - stdin
@@ -16,15 +18,33 @@ type Config struct {
 
 func usage() string {
 	return "Usage:\n basesf [encode | decode | version | help]\n" +
-		"   {-i file | --in=file}\n" +
-		"   {-o file | --out=file}\n" +
-		"   {-b size | --buffer=size}\n" +
+		"   {-i FILE | --in=FILE}\n" +
+		"   {-o FILE | --out=FILE}\n" +
+		"   {-b SIZE | --buffer=SIZE}\n" +
 		"   {-v | --verbose}"
+}
+
+func help() string {
+	return fmt.Sprintf("Usage: basesf [commands] {options}\n"+
+		"  *commands:\n"+
+		"    encode  - encode file/data to base64 string\n"+
+		"    decode  - decode base64 string to file/data\n"+
+		"    version - display current version of 'basesf'\n"+
+		"    help    - display this message\n"+
+		"  *options:\n"+
+		"    -i FILE, --in=FILE\n"+
+		"       Name of the input file, read from stdin if omitted\n"+
+		"    -o FILE, --out=FILE\n"+
+		"       Name of the output file, write to stdout if omitted\n"+
+		"    {-b SIZE | --buffer=SIZE}\n"+
+		"       Size of the read buffer (SIZE default: %v)\n"+
+		"    {-v | --verbose}\n"+
+		"       Display detail messages of the processing", bUFFER)
 }
 
 func parse(args []string) (cfg *Config, err error) {
 	cfg = &Config{
-		Buffer:  4096,
+		Buffer:  bUFFER,
 		Verbose: false,
 	}
 
