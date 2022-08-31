@@ -10,12 +10,12 @@ A simple tool for base64 encoding and decoding.
 > go version go1.17 xxx
 > ```
 
-1. [Clone](https://github.com/pangduckwai/basesf) the repository from GitHub
+2. [Clone](https://github.com/pangduckwai/basesf) the repository from GitHub
 > ```bash
 > $ git clone https://github.com/pangduckwai/basesf.git
 > ```
 
-1. Build the executable `basesf`
+3. Build the executable `basesf`
 > ```bash
 > $ cd .../basesf
 > $ go build
