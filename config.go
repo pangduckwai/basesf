@@ -26,12 +26,12 @@ func usage() string {
 
 func help() string {
 	return fmt.Sprintf("Usage: basesf [commands] {options}\n"+
-		"  *commands:\n"+
+		"  * commands:\n"+
 		"    encode  - convert input into base64 encoded string\n"+
 		"    decode  - convert base64 encoded string back to the original form\n"+
 		"    version - display current version of 'basesf'\n"+
 		"    help    - display this message\n"+
-		"  *options:\n"+
+		"  * options:\n"+
 		"    -i FILE, --in=FILE\n"+
 		"       name of the input file, omitting means input from stdin\n"+
 		"    -o FILE, --out=FILE\n"+
