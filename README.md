@@ -3,6 +3,24 @@
 
 A simple tool for base64 encoding and decoding.
 
+## Build
+1. [Install](https://go.dev/doc/install) golang
+> ```bash
+> $ go version
+> go version go1.17 xxx
+> ```
+
+1. [Clone](https://github.com/pangduckwai/basesf) the repository from GitHub
+> ```bash
+> $ git clone https://github.com/pangduckwai/basesf.git
+> ```
+
+1. Build the executable `basesf`
+> ```bash
+> $ cd .../basesf
+> $ go build
+```
+
 ## Usage
 ```
 Usage:
