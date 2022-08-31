@@ -49,7 +49,7 @@ Usage:
   - `-b size` | `--buffer=size`
     - the buffer size used to read large inputs, automatically round down to multiple of 3 for encoding and multiple of 4 for decoding
   - `-v | --verbose`
-    - display detail messages of the processing if specified
+    - display detail operation messages during processing if specified
 
 ## Changelog
 ### v0.2.0

@@ -37,9 +37,9 @@ func help() string {
 		"    -o FILE, --out=FILE\n"+
 		"       name of the output file, omitting means output to stdout\n"+
 		"    -b SIZE, --buffer=SIZE\n"+
-		"       size of the read buffer (SIZE default: %v KB)\n"+
+		"       size of the read buffer (SIZE default: %vKB)\n"+
 		"    -v, --verbose\n"+
-		"       display detail messages of the processing", bUFFER/1024)
+		"       display detail operation messages during processing", bUFFER/1024)
 }
 
 func parse(args []string) (cfg *Config, err error) {
