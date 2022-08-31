@@ -3,7 +3,7 @@
 
 A simple tool for base64 encoding and decoding.
 
-## Build
+## Build and Install
 1. [Install](https://go.dev/doc/install) golang
 > ```bash
 > $ go version
@@ -19,7 +19,8 @@ A simple tool for base64 encoding and decoding.
 > ```bash
 > $ cd .../basesf
 > $ go build
-```
+> $ sudo ln -s basesf /usr/local/bin/basesf # for example
+> ```
 
 ## Usage
 ```
