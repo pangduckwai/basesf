@@ -29,6 +29,7 @@ Usage:
    {-i FILE | --in=FILE}
    {-o FILE | --out=FILE}
    {-b SIZE | --buffer=SIZE}
+   {-v | --verbose}
 ```
 
 - Commands
