@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"log"
@@ -20,16 +19,14 @@ func main() {
 
 	switch cfg.Command {
 	case 0:
-		test()
-	case 1:
 		validate(cfg)
 		err = encode(cfg)
-	case 2:
+	case 1:
 		validate(cfg)
 		err = decode(cfg)
-	case 3:
+	case 2:
 		fmt.Printf("%v\n%v\n", app(), help())
-	case 4:
+	case 3:
 		fmt.Println(app())
 	}
 
@@ -39,7 +36,7 @@ func main() {
 }
 
 func Version() string {
-	return "0.2.0"
+	return "0.2.1beta"
 }
 
 func app() string {
@@ -102,29 +99,4 @@ type Err struct {
 
 func (e *Err) Error() string {
 	return fmt.Sprintf("%v", e.Msg)
-}
-
-func test() {
-	content := []byte{128, 182, 109, 169, 39, 17, 65, 10, 93, 201, 88, 143, 79, 5}
-
-	// // Write content to file for testing
-	// err := os.WriteFile("test.bin", content, 0644)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	fmt.Println(content)
-	fmt.Println(content[:9])
-	fmt.Println(content[9:])
-
-	// Encode as base64.
-	encoder := base64.StdEncoding //.WithPadding(base64.NoPadding)
-	encoded0 := encoder.EncodeToString(content)
-	encoded1 := encoder.EncodeToString(content[:9])
-	encoded2 := encoder.EncodeToString(content[9:])
-
-	// Print encoded data to console.
-	fmt.Println("ENCODED 0: " + encoded0)
-	fmt.Println("ENCODED 1: " + encoded1)
-	fmt.Println("ENCODED 2: " + encoded2)
 }

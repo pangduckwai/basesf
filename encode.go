@@ -37,38 +37,71 @@ func encode(cfg *Config) error {
 		defer out.Close()
 	}
 
-	buf := make([]byte, 0, cfg.Buffer)
+	cnt, cnt1, off, maxl := 0, 0, 0, 0
+	var err1 error
+	buf, buf1 := make([]byte, 0, cfg.Buffer), make([]byte, 0, cfg.Buffer)
+
 	for idx := 0; ; idx++ {
-		cnt, err := rdr.Read(buf[:cap(buf)])
-		if cfg.Verbose {
-			verbose(idx, cnt, cfg, (wtr != nil))
+		if err1 == nil { // Looping for the last time, skip read
+			cnt, err = rdr.Read(buf[:cap(buf)])
+			if cfg.Verbose {
+				verbose(idx, cnt, cfg, (wtr != nil))
+			}
 		}
 
-		// As described in the doc, process read data first if n > 0 before
-		// handling error, which could have been EOF
-		if cnt > 0 {
-			if cfg.Input == "" && buf[:cnt][cnt-1] == '\n' {
-				err = io.EOF
+		if cnt > 0 && cfg.Input == "" {
+			// If getting input from stdin interactively, pressing <enter> would signify the end of an input line.
+			if buf[:cnt][0] == 46 { // ASCII code 46 is period ('.')
+				if cnt == 2 && buf[:cnt][1] == 10 { // ASCII code 10 is line feed LF ('\n')
+					cnt = 0
+					off = 1
+					err = io.EOF
+				} else if cnt == 3 && buf[:cnt][1] == 13 && buf[:cnt][2] == 10 { // ASCII code 13 is carriage return CR
+					cnt = 0
+					off = 2
+					err = io.EOF
+				}
 			}
+		}
 
-			encoded := base64.StdEncoding.EncodeToString(buf[:cnt])
+		// As described in the doc, handle read data first if n > 0 before handling error,
+		// it is because the returned error could have been EOF
+		// NOTE: use cnt1, err1 and buf1 here because trying to delay processing for 1 cycle
+		cnt1 -= off
+		if cnt1 > 0 {
+			encoded := base64.StdEncoding.EncodeToString(buf1[:cnt1])
 			if wtr == nil {
-				fmt.Print(encoded)
 				if cfg.Verbose {
-					fmt.Println()
+					if len(encoded) > maxl {
+						maxl = len(encoded)
+					}
+					format := fmt.Sprintf("%%-%dv", maxl)
+					fmt.Printf(format+" %v\n", encoded, buf1[:cnt1])
+				} else {
+					fmt.Print(encoded)
 				}
 			} else {
+				if cfg.Verbose {
+					fmt.Printf("%v %v\n", encoded, buf1[:cnt1])
+				}
 				fmt.Fprint(wtr, encoded)
 			}
 		}
+		if cfg.Verbose && idx == 0 {
+			fmt.Println()
+		}
 
-		if err != nil {
-			if err == io.EOF {
+		if err1 != nil {
+			if err1 == io.EOF {
 				break // Done
 			} else {
-				return err
+				return err1
 			}
 		}
+
+		cnt1 = cnt
+		err1 = err
+		copy(buf1[:cnt], buf[:cnt])
 	}
 
 	if wtr == nil {

@@ -52,7 +52,14 @@ Usage:
   - `-v | --verbose`
     - display detail operation messages during processing if specified
 
+- Notes
+  - When inputting from `stdin` interactively, type a period (.) then press <enter> at a new line indicates there is no more input
+
 ## Changelog
+### v0.2.1 unreleated
+- change handling of trailing CR and/or LF: To ignore trailing CR/LF when reading interactively from stdin
+- allows multi-line inputs when reading interactively from stdin
+
 ### v0.2.0
 - add support of `stdin` as input.
 

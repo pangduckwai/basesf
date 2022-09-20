@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-const bUFFER = 1048576
+const bUFFER = 1048576 // 1024x1024
 
 type Config struct {
 	Command uint8  // 1 - encode; 2 - decode
@@ -30,7 +30,7 @@ func help() string {
 		"    encode  - convert input into base64 encoded string\n"+
 		"    decode  - convert base64 encoded string back to the original form\n"+
 		"    version - display current version of 'basesf'\n"+
-		"    help    - display this message\n"+
+		"    help    - display this message\n\n"+
 		" * options:\n"+
 		"    -i FILE, --in=FILE\n"+
 		"       name of the input file, omitting means input from stdin\n"+
@@ -39,7 +39,8 @@ func help() string {
 		"    -b SIZE, --buffer=SIZE\n"+
 		"       size of the read buffer (SIZE default: %vKB)\n"+
 		"    -v, --verbose\n"+
-		"       display detail operation messages during processing", bUFFER/1024)
+		"       display detail operation messages during processing\n\n"+
+		"  NOTE: type a period (.) then press <enter> in a new line to finish\n         when inputting interactively from stdin", bUFFER/1024)
 }
 
 func parse(args []string) (cfg *Config, err error) {
@@ -53,16 +54,14 @@ func parse(args []string) (cfg *Config, err error) {
 	}
 
 	switch args[1] {
-	case "test":
-		cfg.Command = 0
 	case "encode":
-		cfg.Command = 1
+		cfg.Command = 0
 	case "decode":
-		cfg.Command = 2
+		cfg.Command = 1
 	case "help":
-		cfg.Command = 3
+		cfg.Command = 2
 	case "version":
-		cfg.Command = 4
+		cfg.Command = 3
 	default:
 		return nil, &Err{1, fmt.Sprintf("Invalid command '%v'", args[1])}
 	}
