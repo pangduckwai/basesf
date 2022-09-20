@@ -74,6 +74,7 @@ func encode(cfg *Config) error {
 				maxl = len(encoded)
 			}
 			format := fmt.Sprintf("%%-%dv", maxl)
+
 			if wtr == nil {
 				if cfg.Verbose {
 					fmt.Printf(format+" %v\n", encoded, buf1[:cnt1])
