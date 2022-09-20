@@ -42,7 +42,7 @@ func encode(cfg *Config) error {
 	buf, buf1 := make([]byte, 0, cfg.Buffer), make([]byte, 0, cfg.Buffer)
 
 	for idx := 0; ; idx++ {
-		if err1 == nil { // Looping for the last time, skip read
+		if err1 == nil { // When loop for the last time, skip read
 			cnt, err = rdr.Read(buf[:cap(buf)])
 			if cfg.Verbose {
 				verbose(idx, cnt, cfg, (wtr != nil))
@@ -70,19 +70,19 @@ func encode(cfg *Config) error {
 		cnt1 -= off
 		if cnt1 > 0 {
 			encoded := base64.StdEncoding.EncodeToString(buf1[:cnt1])
+			if len(encoded) > maxl {
+				maxl = len(encoded)
+			}
+			format := fmt.Sprintf("%%-%dv", maxl)
 			if wtr == nil {
 				if cfg.Verbose {
-					if len(encoded) > maxl {
-						maxl = len(encoded)
-					}
-					format := fmt.Sprintf("%%-%dv", maxl)
 					fmt.Printf(format+" %v\n", encoded, buf1[:cnt1])
 				} else {
 					fmt.Print(encoded)
 				}
 			} else {
 				if cfg.Verbose {
-					fmt.Printf("%v %v\n", encoded, buf1[:cnt1])
+					fmt.Printf(format+" %v\n", encoded, buf1[:cnt1])
 				}
 				fmt.Fprint(wtr, encoded)
 			}
