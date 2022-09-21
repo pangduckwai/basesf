@@ -45,7 +45,7 @@ func decode(cfg *Config) error {
 		if err1 == nil { // When loop for the last time, skip read
 			cnt, err = rdr.Read(buf[:cap(buf)])
 			if cfg.Verbose {
-				verbose(idx, cnt, cfg, (wtr != nil))
+				verbose(idx, cnt, cfg)
 			}
 		}
 
@@ -81,19 +81,22 @@ func decode(cfg *Config) error {
 
 			if wtr == nil {
 				if cfg.Verbose {
-					fmt.Printf(format+" %v\n", encoded, decoded)
+					fmt.Printf(format+" -> %v\n", encoded, decoded)
 				} else {
 					fmt.Println(decoded) // Not terribly useful here...
 				}
 			} else {
 				if cfg.Verbose {
-					fmt.Printf(format+" %v\n", encoded, decoded)
+					fmt.Printf(format+" -> %v\n", encoded, decoded)
 				}
 				_, errr = wtr.Write(decoded) // Write must return error if # of bytes written < len(decoded), so the # of bytes returned can be ignored
 				if errr != nil {
 					return errr
 				}
 			}
+		}
+		if cfg.Verbose && idx == 0 {
+			fmt.Println()
 		}
 
 		if err1 != nil {

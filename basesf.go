@@ -75,7 +75,7 @@ func display(cfg *Config) string {
 	return fmt.Sprintf("'%v' to '%v'", inp, out)
 }
 
-func verbose(idx, cnt int, cfg *Config, linefeed bool) {
+func verbose(idx, cnt int, cfg *Config) {
 	digits := int(math.Log10(float64(cfg.Buffer))) + 1
 	format := fmt.Sprintf("%%%dv", digits)
 
@@ -84,12 +84,7 @@ func verbose(idx, cnt int, cfg *Config, linefeed bool) {
 		plr = " "
 	}
 
-	lf := " | "
-	if linefeed {
-		lf = "\n"
-	}
-
-	fmt.Printf("%4v - read "+format+"/%v byte%v%v", idx, cnt, cfg.Buffer, plr, lf)
+	fmt.Printf("%4v - read "+format+"/%v byte%v | ", idx, cnt, cfg.Buffer, plr) //, lf)
 }
 
 type Err struct {

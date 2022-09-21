@@ -45,7 +45,7 @@ func encode(cfg *Config) error {
 		if err1 == nil { // When loop for the last time, skip read
 			cnt, err = rdr.Read(buf[:cap(buf)])
 			if cfg.Verbose {
-				verbose(idx, cnt, cfg, (wtr != nil))
+				verbose(idx, cnt, cfg)
 			}
 		}
 
@@ -77,13 +77,13 @@ func encode(cfg *Config) error {
 
 			if wtr == nil {
 				if cfg.Verbose {
-					fmt.Printf(format+" %v\n", encoded, buf1[:cnt1])
+					fmt.Printf(format+" <- %v\n", encoded, buf1[:cnt1])
 				} else {
 					fmt.Print(encoded)
 				}
 			} else {
 				if cfg.Verbose {
-					fmt.Printf(format+" %v\n", encoded, buf1[:cnt1])
+					fmt.Printf(format+" <- %v\n", encoded, buf1[:cnt1])
 				}
 				fmt.Fprint(wtr, encoded)
 			}
