@@ -36,7 +36,7 @@ func main() {
 }
 
 func Version() string {
-	return "0.2.1beta"
+	return "0.2.1"
 }
 
 func app() string {

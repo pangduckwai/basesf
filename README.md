@@ -56,7 +56,7 @@ Usage:
   - When inputting from `stdin` interactively, type a period (.) then press <enter> at a new line indicates there is no more input
 
 ## Changelog
-### v0.2.1 unreleated
+### v0.2.1
 - change handling of trailing CR and/or LF: To ignore trailing CR/LF when reading interactively from stdin
 - allows multi-line inputs when reading interactively from stdin
 
