@@ -9,12 +9,6 @@ import (
 )
 
 func encode(cfg *Config) error {
-	cfg.Buffer = cfg.Buffer - (cfg.Buffer % 3) // Base64 encoding represents 3 bytes using 4 characters
-
-	if cfg.Verbose {
-		fmt.Printf("Encoding %v (buffer size: %v)...\n", display(cfg), cfg.Buffer)
-	}
-
 	var err error
 	inp := os.Stdin
 	if cfg.Input != "" {
@@ -23,7 +17,33 @@ func encode(cfg *Config) error {
 			return err
 		}
 	}
+
+	// Since base64 encoding processes 3 characters at a time. To simplify the logic, the buffer size is set to a multiple of 3.
+	// However according to the doc, the function NewReaderSize() "...returns a new Reader whose buffer has at least the specified
+	// size. If the argument io.Reader is already a Reader with large enough size, it returns the underlying Reader..."
+	// Testings show that apparently the reader returned by os.Open() has a buffer size of 16. Therefore if the specified 'basesf'
+	// buffer size is less than 16, the buffered reader will have a size of 16 instead of the desired size. This will cause problem
+	// when encoding, as the reader will pause after reading a total of 16 characters, cutting a 3-character unit into 2 parts.
+	// Therefore need to re-create a new buffered reader if the reader's size does not match the specified 'basesf' buffer size.
+	cfg.Buffer = cfg.Buffer - (cfg.Buffer % 3) // Base64 encoding represents 3 bytes with 4 characters
 	rdr := bufio.NewReaderSize(inp, cfg.Buffer)
+	if rdr.Size() != cfg.Buffer {
+		if cfg.Verbose {
+			fmt.Printf("Read buffer size %v mismatching with the specified size %v, changing buffer size...\n", rdr.Size(), cfg.Buffer)
+		}
+
+		rmd := rdr.Size() % 3
+		if rmd == 0 {
+			cfg.Buffer = rdr.Size()
+		} else {
+			cfg.Buffer = rdr.Size() + 3 - rmd
+		}
+		rdr = bufio.NewReaderSize(inp, cfg.Buffer)
+	}
+
+	if cfg.Verbose {
+		fmt.Printf("Encoding %v (buffer size: %v)...\n", display(cfg), cfg.Buffer)
+	}
 
 	var wtr *bufio.Writer
 	if cfg.Output != "" {
@@ -45,7 +65,7 @@ func encode(cfg *Config) error {
 		if err1 == nil { // When loop for the last time, skip read
 			cnt, err = rdr.Read(buf[:cap(buf)])
 			if cfg.Verbose {
-				verbose(idx, cnt, cfg)
+				verboseHead(idx, cnt, cfg)
 			}
 		}
 
@@ -73,18 +93,15 @@ func encode(cfg *Config) error {
 			if len(encoded) > maxl {
 				maxl = len(encoded)
 			}
-			format := fmt.Sprintf("%%-%dv", maxl)
 
+			if cfg.Verbose {
+				verboseDtls(encoded, buf1[:cnt1], maxl, true)
+			}
 			if wtr == nil {
-				if cfg.Verbose {
-					fmt.Printf(format+" <- %v\n", encoded, buf1[:cnt1])
-				} else {
+				if !cfg.Verbose {
 					fmt.Print(encoded)
 				}
 			} else {
-				if cfg.Verbose {
-					fmt.Printf(format+" <- %v\n", encoded, buf1[:cnt1])
-				}
 				fmt.Fprint(wtr, encoded)
 			}
 		}
@@ -105,10 +122,10 @@ func encode(cfg *Config) error {
 		copy(buf1[:cnt], buf[:cnt])
 	}
 
-	if wtr == nil {
-		fmt.Println()
-	} else {
+	if wtr != nil {
 		wtr.Flush()
+	} else if !cfg.Verbose {
+		fmt.Println()
 	}
 
 	if cfg.Verbose {

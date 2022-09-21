@@ -6,6 +6,7 @@ import (
 	"log"
 	"math"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -36,7 +37,7 @@ func main() {
 }
 
 func Version() string {
-	return "0.2.1"
+	return "0.3.1"
 }
 
 func app() string {
@@ -75,7 +76,7 @@ func display(cfg *Config) string {
 	return fmt.Sprintf("'%v' to '%v'", inp, out)
 }
 
-func verbose(idx, cnt int, cfg *Config) {
+func verboseHead(idx, cnt int, cfg *Config) {
 	digits := int(math.Log10(float64(cfg.Buffer))) + 1
 	format := fmt.Sprintf("%%%dv", digits)
 
@@ -85,6 +86,32 @@ func verbose(idx, cnt int, cfg *Config) {
 	}
 
 	fmt.Printf("%4v - read "+format+"/%v byte%v | ", idx, cnt, cfg.Buffer, plr) //, lf)
+}
+
+func verboseDtls(encoded string, decoded []byte, maxlen int, isEncoded bool) {
+	dirn := "->"
+	if isEncoded {
+		dirn = "<-"
+	}
+
+	display0 := maxlen
+	if maxlen > dISPLAY1 {
+		display0 = dISPLAY1
+	}
+
+	display1 := encoded
+	if len(encoded) >= dISPLAY1 {
+		display1 = encoded[0:dISPLAY1-3] + "..."
+	}
+
+	display2 := fmt.Sprintf("%v", decoded)
+	if len(decoded) > dISPLAY2 {
+		tmp := fmt.Sprintf("%v", decoded[0:dISPLAY2])
+		lidx := strings.LastIndex(tmp, " ")
+		display2 = tmp[0:lidx] + " ...]"
+	}
+
+	fmt.Printf(fmt.Sprintf("%%-%dv", display0)+" %v %v\n", display1, dirn, display2)
 }
 
 type Err struct {

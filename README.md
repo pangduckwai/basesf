@@ -49,14 +49,17 @@ Usage:
     - name of the file to write the output to, omitting means output to `stdout`
   - `-b size` | `--buffer=size`
     - the buffer size used to read large inputs, automatically round down to multiple of 3 for encoding and multiple of 4 for decoding
-  - `-v | --verbose`
+  - `-v` | `--verbose`
     - display detail operation messages during processing if specified
 
 - Notes
   - When inputting from `stdin` interactively, type a period (.) then press <enter> at a new line indicates there is no more input
 
 ## Changelog
-### v0.2.1
+### v0.3.1
+- fix the problem when specified buffer size less than 16.
+
+### v0.3.0
 - change handling of trailing CR and/or LF: To ignore trailing CR/LF when reading interactively from stdin
 - allows multi-line inputs when reading interactively from stdin
 

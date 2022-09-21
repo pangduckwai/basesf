@@ -9,12 +9,6 @@ import (
 )
 
 func decode(cfg *Config) error {
-	cfg.Buffer = cfg.Buffer - (cfg.Buffer % 4) // Base64 encoding represents 3 bytes using 4 characters
-
-	if cfg.Verbose {
-		fmt.Printf("Decoding %v (buffer size: %v)...\n", display(cfg), cfg.Buffer)
-	}
-
 	var err error
 	inp := os.Stdin
 	if cfg.Input != "" {
@@ -23,7 +17,31 @@ func decode(cfg *Config) error {
 			return err
 		}
 	}
+
+	// According to the doc, the function NewReaderSize() "...returns a new Reader whose buffer has at least the specified size.
+	// If the argument io.Reader is already a Reader with large enough size, it returns the underlying Reader..."
+	// Testings show that apparently the reader returned by os.Open() has a buffer size of 16. Therefore if the specified 'basesf'
+	// buffer size is less than 16, the buffered reader will have a size of 16 instead of the specified size. Re-creating the
+	// buffered reader size to match the size returned by os.Open() since the memory is already allocated.
+	cfg.Buffer = cfg.Buffer - (cfg.Buffer % 4) // Base64 encoding represents 3 bytes with 4 characters
 	rdr := bufio.NewReaderSize(inp, cfg.Buffer)
+	if rdr.Size() != cfg.Buffer {
+		if cfg.Verbose {
+			fmt.Printf("Read buffer size %v mismatching with the specified size %v, changing buffer size...\n", rdr.Size(), cfg.Buffer)
+		}
+
+		rmd := rdr.Size() % 4
+		if rmd == 0 {
+			cfg.Buffer = rdr.Size()
+		} else {
+			cfg.Buffer = rdr.Size() + 4 - rmd
+		}
+		rdr = bufio.NewReaderSize(inp, cfg.Buffer)
+	}
+
+	if cfg.Verbose {
+		fmt.Printf("Decoding %v (buffer size: %v)...\n", display(cfg), cfg.Buffer)
+	}
 
 	var wtr *bufio.Writer
 	if cfg.Output != "" {
@@ -45,7 +63,7 @@ func decode(cfg *Config) error {
 		if err1 == nil { // When loop for the last time, skip read
 			cnt, err = rdr.Read(buf[:cap(buf)])
 			if cfg.Verbose {
-				verbose(idx, cnt, cfg)
+				verboseHead(idx, cnt, cfg)
 			}
 		}
 
@@ -77,18 +95,15 @@ func decode(cfg *Config) error {
 			if len(encoded) > maxl {
 				maxl = len(encoded)
 			}
-			format := fmt.Sprintf("%%-%dv", maxl)
 
+			if cfg.Verbose {
+				verboseDtls(encoded, decoded, maxl, false)
+			}
 			if wtr == nil {
-				if cfg.Verbose {
-					fmt.Printf(format+" -> %v\n", encoded, decoded)
-				} else {
+				if !cfg.Verbose {
 					fmt.Println(decoded) // Not terribly useful here...
 				}
 			} else {
-				if cfg.Verbose {
-					fmt.Printf(format+" -> %v\n", encoded, decoded)
-				}
 				_, errr = wtr.Write(decoded) // Write must return error if # of bytes written < len(decoded), so the # of bytes returned can be ignored
 				if errr != nil {
 					return errr
