@@ -8,7 +8,7 @@ import (
 
 const bUFFER = 1048576 // 1024x1024
 const dISPLAY1 = 20    // Length of displayed encoded text in verbose mode
-const dISPLAY2 = 13    // Length of displayed decoded bytes in verbose mode
+const dISPLAY2 = 16    // Length of displayed decoded bytes in verbose mode
 
 type Config struct {
 	Command uint8  // 1 - encode; 2 - decode

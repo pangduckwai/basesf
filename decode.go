@@ -18,24 +18,23 @@ func decode(cfg *Config) error {
 		}
 	}
 
+	// v0.3.1
 	// According to the doc, the function NewReaderSize() "...returns a new Reader whose buffer has at least the specified size.
 	// If the argument io.Reader is already a Reader with large enough size, it returns the underlying Reader..."
 	// Testings show that apparently the reader returned by os.Open() has a buffer size of 16. Therefore if the specified 'basesf'
 	// buffer size is less than 16, the buffered reader will have a size of 16 instead of the specified size. Re-creating the
 	// buffered reader size to match the size returned by os.Open() since the memory is already allocated.
-	cfg.Buffer = cfg.Buffer - (cfg.Buffer % 4) // Base64 encoding represents 3 bytes with 4 characters
+	//
+	// v0.4.0
+	// According to the doc the buffered reader may return less characters (and not multiple of 4) for unspecified reasons. It is
+	// more robust to make sure the number of characters processed is multiple of 3 except for the last round.
+
 	rdr := bufio.NewReaderSize(inp, cfg.Buffer)
 	if rdr.Size() != cfg.Buffer {
 		if cfg.Verbose {
 			fmt.Printf("Read buffer size %v mismatching with the specified size %v, changing buffer size...\n", rdr.Size(), cfg.Buffer)
 		}
-
-		rmd := rdr.Size() % 4
-		if rmd == 0 {
-			cfg.Buffer = rdr.Size()
-		} else {
-			cfg.Buffer = rdr.Size() + 4 - rmd
-		}
+		cfg.Buffer = rdr.Size()
 		rdr = bufio.NewReaderSize(inp, cfg.Buffer)
 	}
 
@@ -55,7 +54,7 @@ func decode(cfg *Config) error {
 		defer out.Close()
 	}
 
-	cnt, cnt1, off, maxl := 0, 0, 0, 0
+	cnt, cnt1, cnt2, off, maxl := 0, 0, 0, 0, 0
 	var err1 error
 	buf, buf1 := make([]byte, 0, cfg.Buffer), make([]byte, 0, cfg.Buffer)
 
@@ -87,7 +86,12 @@ func decode(cfg *Config) error {
 		// NOTE: use cnt1, err1 and buf1 here because trying to delay processing for 1 cycle
 		cnt1 -= off
 		if cnt1 > 0 {
-			encoded := string(buf1[:cnt1])
+			cnt2 = cnt1 - (cnt1 % 4)
+			if err != nil {
+				cnt2 = cnt1 // Process everything when looping for the last time
+			}
+
+			encoded := string(buf1[:cnt2])
 			decoded, errr := base64.StdEncoding.DecodeString(encoded)
 			if errr != nil {
 				return &Err{21, errr.Error()}
@@ -97,7 +101,7 @@ func decode(cfg *Config) error {
 			}
 
 			if cfg.Verbose {
-				verboseDtls(encoded, decoded, maxl, false)
+				verboseDtls(encoded, decoded, maxl, false, cfg)
 			}
 			if wtr == nil {
 				if !cfg.Verbose {
@@ -122,9 +126,9 @@ func decode(cfg *Config) error {
 			}
 		}
 
-		cnt1 = cnt
+		buf1 = append(buf1[cnt2:cnt1], buf[:cnt]...)
+		cnt1 = cnt1 - cnt2 + cnt
 		err1 = err
-		copy(buf1[:cnt], buf[:cnt])
 	}
 
 	if wtr == nil {

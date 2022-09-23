@@ -18,26 +18,27 @@ func encode(cfg *Config) error {
 		}
 	}
 
-	// Since base64 encoding processes 3 characters at a time. To simplify the logic, the buffer size is set to a multiple of 3.
+	// v0.3.1
+	// Since base64 encoding represents 3 bytes using 4 characters. To simplify the logic, the buffer size is set to a multiple of 3.
 	// However according to the doc, the function NewReaderSize() "...returns a new Reader whose buffer has at least the specified
 	// size. If the argument io.Reader is already a Reader with large enough size, it returns the underlying Reader..."
 	// Testings show that apparently the reader returned by os.Open() has a buffer size of 16. Therefore if the specified 'basesf'
 	// buffer size is less than 16, the buffered reader will have a size of 16 instead of the desired size. This will cause problem
 	// when encoding, as the reader will pause after reading a total of 16 characters, cutting a 3-character unit into 2 parts.
 	// Therefore need to re-create a new buffered reader if the reader's size does not match the specified 'basesf' buffer size.
-	cfg.Buffer = cfg.Buffer - (cfg.Buffer % 3) // Base64 encoding represents 3 bytes with 4 characters
+	//
+	// v0.4.0
+	// Relying on the buffer size is a multiple of 3 is not safe. For example when receiving input from pipe, it seems that both in
+	// Linux and MaxOS the shell can only pipe 65536 characters at a time. According to the doc the buffered reader may also return
+	// less characters (and not multiple of 3) for unspecified reasons. It is more robust to make sure the number of characters
+	// processed is multiple of 3 except for the last round.
+
 	rdr := bufio.NewReaderSize(inp, cfg.Buffer)
 	if rdr.Size() != cfg.Buffer {
 		if cfg.Verbose {
 			fmt.Printf("Read buffer size %v mismatching with the specified size %v, changing buffer size...\n", rdr.Size(), cfg.Buffer)
 		}
-
-		rmd := rdr.Size() % 3
-		if rmd == 0 {
-			cfg.Buffer = rdr.Size()
-		} else {
-			cfg.Buffer = rdr.Size() + 3 - rmd
-		}
+		cfg.Buffer = rdr.Size()
 		rdr = bufio.NewReaderSize(inp, cfg.Buffer)
 	}
 
@@ -57,9 +58,9 @@ func encode(cfg *Config) error {
 		defer out.Close()
 	}
 
-	cnt, cnt1, off, maxl := 0, 0, 0, 0
+	cnt, cnt1, cnt2, off, maxl := 0, 0, 0, 0, 0
 	var err1 error
-	buf, buf1 := make([]byte, 0, cfg.Buffer), make([]byte, 0, cfg.Buffer)
+	buf, buf1 := make([]byte, 0, cfg.Buffer), make([]byte, 0, cfg.Buffer*2)
 
 	for idx := 0; ; idx++ {
 		if err1 == nil { // When loop for the last time, skip read
@@ -89,13 +90,18 @@ func encode(cfg *Config) error {
 		// NOTE: use cnt1, err1 and buf1 here because trying to delay processing for 1 cycle
 		cnt1 -= off
 		if cnt1 > 0 {
-			encoded := base64.StdEncoding.EncodeToString(buf1[:cnt1])
+			cnt2 = cnt1 - (cnt1 % 3)
+			if err != nil {
+				cnt2 = cnt1 // Process everything when looping for the last time
+			}
+
+			encoded := base64.StdEncoding.EncodeToString(buf1[:cnt2])
 			if len(encoded) > maxl {
 				maxl = len(encoded)
 			}
 
 			if cfg.Verbose {
-				verboseDtls(encoded, buf1[:cnt1], maxl, true)
+				verboseDtls(encoded, buf1[:cnt2], maxl, true, cfg)
 			}
 			if wtr == nil {
 				if !cfg.Verbose {
@@ -117,9 +123,9 @@ func encode(cfg *Config) error {
 			}
 		}
 
-		cnt1 = cnt
+		buf1 = append(buf1[cnt2:cnt1], buf[:cnt]...)
+		cnt1 = cnt1 - cnt2 + cnt
 		err1 = err
-		copy(buf1[:cnt], buf[:cnt])
 	}
 
 	if wtr != nil {

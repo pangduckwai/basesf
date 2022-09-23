@@ -37,7 +37,7 @@ func main() {
 }
 
 func Version() string {
-	return "0.3.1"
+	return "0.4.0beta1"
 }
 
 func app() string {
@@ -78,20 +78,29 @@ func display(cfg *Config) string {
 
 func verboseHead(idx, cnt int, cfg *Config) {
 	digits := int(math.Log10(float64(cfg.Buffer))) + 1
-	format := fmt.Sprintf("%%%dv", digits)
-
 	plr := "s"
 	if cnt < 2 {
 		plr = " "
 	}
 
-	fmt.Printf("%4v - read "+format+"/%v byte%v | ", idx, cnt, cfg.Buffer, plr) //, lf)
+	fmt.Printf("%4v - read "+fmt.Sprintf("%%%dv", digits)+"/%v byte%v, ", idx, cnt, cfg.Buffer, plr) //, lf)
 }
 
-func verboseDtls(encoded string, decoded []byte, maxlen int, isEncoded bool) {
+func verboseDtls(encoded string, decoded []byte, maxlen int, isEncoded bool, cfg *Config) {
+	digits := int(math.Log10(float64(cfg.Buffer*2))) + 1
+
+	msg := "decode"
+	cnt := len(encoded)
 	dirn := "->"
 	if isEncoded {
+		msg = "encode"
+		cnt = len(decoded)
 		dirn = "<-"
+	}
+
+	plr := "s"
+	if cnt < 2 {
+		plr = " "
 	}
 
 	display0 := maxlen
@@ -100,7 +109,7 @@ func verboseDtls(encoded string, decoded []byte, maxlen int, isEncoded bool) {
 	}
 
 	display1 := encoded
-	if len(encoded) >= dISPLAY1 {
+	if len(encoded) > dISPLAY1 {
 		display1 = encoded[0:dISPLAY1-3] + "..."
 	}
 
@@ -111,7 +120,7 @@ func verboseDtls(encoded string, decoded []byte, maxlen int, isEncoded bool) {
 		display2 = tmp[0:lidx] + " ...]"
 	}
 
-	fmt.Printf(fmt.Sprintf("%%-%dv", display0)+" %v %v\n", display1, dirn, display2)
+	fmt.Printf(fmt.Sprintf("%v %%%dv byte%v | %%-%dv", msg, digits, plr, display0)+" %v %v\n", cnt, display1, dirn, display2)
 }
 
 type Err struct {
