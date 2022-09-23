@@ -56,8 +56,11 @@ Usage:
   - When inputting from `stdin` interactively, type a period (.) then press <enter> at a new line indicates there is no more input
 
 ## Changelog
+### v0.4.0
+- base64 encoding processes 3 bytes at a time and if data size is larger than buffer size, need to ensure the size of each chunk of data read is a multiple of 3. To simplify the logic, the older versions archieve this by controlling the buffer size of the reader. This version change to a more robust solution to control the actual number of bytes processed for each chunk
+
 ### v0.3.1
-- fix the problem when specified buffer size less than 16.
+- fix the problem when specified buffer size less than 16
 
 ### v0.3.0
 - change handling of trailing CR and/or LF: To ignore trailing CR/LF when reading interactively from stdin
