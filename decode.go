@@ -27,7 +27,7 @@ func decode(cfg *Config) error {
 	//
 	// v0.4.0
 	// According to the doc the buffered reader may return less characters (and not multiple of 4) for unspecified reasons. It is
-	// more robust to make sure the number of characters processed is multiple of 3 except for the last round.
+	// more robust to make sure the number of characters processed is multiple of 4 except for the last round.
 
 	rdr := bufio.NewReaderSize(inp, cfg.Buffer)
 	if rdr.Size() != cfg.Buffer {
