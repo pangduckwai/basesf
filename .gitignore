@@ -5,6 +5,11 @@
 *.so
 *.dylib
 
+# Binaries in cmd/
+cmd/**
+!cmd/**/
+!cmd/**/*.go
+
 # Test binary, built with `go test -c`
 *.test
 test*
@@ -18,4 +23,4 @@ temp*
 # vendor/
 
 bin/
-basesf
+# basesf
