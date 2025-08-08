@@ -105,7 +105,7 @@ func decode(cfg *Config) error {
 			}
 			if wtr == nil {
 				if !cfg.Verbose {
-					fmt.Println(decoded) // Not terribly useful here...
+					fmt.Printf("%x", decoded) // Show Hex encoding...
 				}
 			} else {
 				_, errr = wtr.Write(decoded) // Write must return error if # of bytes written < len(decoded), so the # of bytes returned can be ignored
